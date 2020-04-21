@@ -1,4 +1,4 @@
-# Contiguous
+# Verticies and connected edges
 VA06:EA06,EB05
 VA07:EA06,EB07
 
