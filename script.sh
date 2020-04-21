@@ -142,7 +142,7 @@ for ring in 5 4 3 2 1; do
   last=""
   for edge in $(cat "perimeter${ring}-roads.txt" | egrep '^E'); do
     this_edge=$(echo $edge | sed -e 's/:.*//g')
-    echo "$this_edge"
+    # echo "$this_edge"
     EDGES="$EDGES $this_edge"
     eval "C$this_edge='${GREEN}'"
     NOW=$(date +%s)
@@ -160,7 +160,7 @@ for ring in 3 2 1; do
   for vertex in $(cat "perimeter${ring}-settlements.txt" | egrep '^V'); do
     # echo "$vertex"
     this_vertex=$(echo $vertex | sed -e 's/:.*//g')
-    echo "$this_vertex"
+    # echo "$this_vertex"
     VERTS="$VERTS $this_vertex"
     eval "C$this_vertex='${RED}'"
     NOW=$(date +%s)
@@ -175,14 +175,16 @@ sleep 1
 prev="temp"
 last="EB05"
 next="EA06"
+lastv="blah"
 while true; do
   next=$(cat contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | sort -R | head -1)
-  echo "$next"
+  # echo "$next"
   eval "C$next='${BLUE}'"
   VERTEX=$(cat verticies.txt | grep "$next" | grep "$last" | sed -e 's/:.*//g')
-  eval "C$VERTEX='${NC}'"
+  eval "C$VERTEX='${BLUE}'"
   eval "C$last='${BLUE}'"
   eval "C$prev='${NC}'"
+  eval "C$lastv='${NC}'"
   if [ -z "$last" ]; then
     echo "last: $last doesn't exist..."
     echo "next: $next"
@@ -229,4 +231,5 @@ while true; do
   perl -e 'select(undef,undef,undef,'$sleep_forr')'
   prev="$last"
   last="$next"
+  lastv="$VERTEX"
 done
