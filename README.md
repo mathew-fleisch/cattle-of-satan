@@ -7,4 +7,4 @@ _________         __    __  .__           ________   _____    _________       __
         \/     \/                     \/          \/                \/     \/          \/     \/ 
 ```
 
-This is not settlers of catan.
+This is not Settlers of Catan.
