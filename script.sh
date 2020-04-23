@@ -137,7 +137,7 @@ echo -e " ${BORDER_BOT}"
 # sleep 4
 # Iterate through all roads left to right
 # last=""
-# for edge in $(cat contiguous-roads.txt | egrep '^E'); do
+# for edge in $(cat board/contiguous-roads.txt | egrep '^E'); do
 #   # echo "$edge"
 #   this_edge=$(echo $edge | sed -e 's/:.*//g')
 #   echo "$this_edge"
@@ -153,7 +153,7 @@ for ring in 5 4 3 2 1; do
   # echo "$ring"
   # echo "────────────--"
   last=""
-  for edge in $(cat "perimeter${ring}-roads.txt" | egrep '^E'); do
+  for edge in $(cat "board/perimeter${ring}-roads.txt" | egrep '^E'); do
     this_edge=$(echo $edge | sed -e 's/:.*//g')
     # echo "$this_edge"
     EDGES="$EDGES $this_edge"
@@ -171,7 +171,7 @@ done
 # Iterate through all verticies
 for ring in 3 2 1; do
   last=""
-  for vertex in $(cat "perimeter${ring}-settlements.txt" | egrep '^V' | tail -r); do
+  for vertex in $(cat "board/perimeter${ring}-settlements.txt" | egrep '^V' | tail -r); do
     # echo "$vertex"
     this_vertex=$(echo $vertex | sed -e 's/:.*//g')
     # echo "$this_vertex"
@@ -228,25 +228,25 @@ while true; do
   # echo "Prev: $prev:$prevv"
   # echo "Last: $last:$lastv"
   # echo "Next: $next:$nextv"
-  # echo "beforev: $(cat contiguous-roads.txt | grep $beforev:)"
-  # echo "prev: $(cat contiguous-roads.txt | grep $prev:)"
-  # echo "last: $(cat contiguous-roads.txt | grep $last:)"
-  # echo "next: $(cat contiguous-roads.txt | grep $next:)"
+  # echo "beforev: $(cat board/contiguous-roads.txt | grep $beforev:)"
+  # echo "prev: $(cat board/contiguous-roads.txt | grep $prev:)"
+  # echo "last: $(cat board/contiguous-roads.txt | grep $last:)"
+  # echo "next: $(cat board/contiguous-roads.txt | grep $next:)"
 
 
-  next=$(cat contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$before" | sort -R | head -1)
+  next=$(cat board/contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$before" | sort -R | head -1)
   # next_color=$(eval "echo $(echo \"\$C$next\")")
   # echo "Next: $next -> $next_color"
   # echo "Next: $next"
   # # Try to pick an edge that hasn't been changed yet
   # if [[ "$next_color" = "$NC" ]]; then
-  #   potential_next=$(cat contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$next" | sort -R | head -1)
+  #   potential_next=$(cat board/contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$next" | sort -R | head -1)
   #   if ! [ -z $potential_next ]; then
   #     next="$potential_next"
   #   fi
   # fi
   eval "C$next='${BLUE}'"
-  nextv=$(cat verticies.txt | grep "$next" | grep "$last" | sed -e 's/:.*//g')
+  nextv=$(cat board/verticies.txt | grep "$next" | grep "$last" | sed -e 's/:.*//g')
 
   # echo "---------- After ------------"
   # echo "Before: $before:$beforev"
@@ -256,12 +256,12 @@ while true; do
   # echo "-----------------------------"
   if [ -z "$nextv" ]; then
     echo "$next:$last has no vertex..."
-    echo "prev: $(cat contiguous-roads.txt | grep $prev:)"
-    echo "last: $(cat contiguous-roads.txt | grep $last:)"
-    echo "next: $(cat contiguous-roads.txt | grep $next:)"
+    echo "prev: $(cat board/contiguous-roads.txt | grep $prev:)"
+    echo "last: $(cat board/contiguous-roads.txt | grep $last:)"
+    echo "next: $(cat board/contiguous-roads.txt | grep $next:)"
     echo "-----------------------------"
 
-    echo "cat contiguous-roads.txt | grep \"$next:\" | sed -e 's/^.*://g' | tr , '\n' | grep -v \"$last\" | grep -v \"$prev\""
+    echo "cat board/contiguous-roads.txt | grep \"$next:\" | sed -e 's/^.*://g' | tr , '\n' | grep -v \"$last\" | grep -v \"$prev\""
     exit 0
   fi
   eval "C$nextv='${BLUE}'"
