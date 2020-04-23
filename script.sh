@@ -102,7 +102,7 @@ echo -e " │ ${GRID_L17_A}${P1F01}${CEF01}${EF01}${NC}${TAF02}${CEF03}${EF03}${
 echo -e " │ ${GRID_L18_A}${P2F01}${CEF01}${EF01}${NC}${CTB06}${TBF02}${NC}${CEF03}${EF03}${NC}${TEE04}${CEF05}${EF05}${NC}${CTB06}${TBF06}${NC}${CEF07}${EF07}${NC}${TEE08}${CEF09}${EF09}${NC}${CTB06}${TBF10}${NC}${CEF11}${EF11}${NC}${P2F11}${GRID_L18_B}                     │"
 # F
 echo -e " │ ${GRID_L19_A}${CVF01}${VF01}${NC}${CEF01}${EF01}${NC}${CTB06}${TCF02}${NC}${CEF03}${EF03}${NC}${CVF04}${VF04}${NC}${CEF04}${EF04}${NC}${CVF05}${VF05}${NC}${CEF05}${EF05}${NC}${CTB06}${TCF06}${NC}${CEF07}${EF07}${NC}${CVF08}${VF08}${NC}${CEF08}${EF08}${NC}${CVF09}${VF09}${NC}${CEF09}${EF09}${NC}${CTB06}${TCF10}${NC}${CEF11}${EF11}${NC}${CVF12}${VF12}${NC}${GRID_L19_B}                 │"
-echo -e " │ ${GRID_L20_A}${CEG01}${EG01}${NC}${CTB06}${TDF02}${NC}${CEG03}${EG03}${NC}${TAG04}${CEG05}${EG05}${NC}${CTB06}${TDG08}${NC}${CEG07}${EG07}${NC}${TAG08}${CEG09}${EG09}${NC}${CTB06}${TDF10}${NC}${CEG11}${EG11}${NC}${GRID_L20_B}                     │"
+echo -e " │ ${GRID_L20_A}${CEG01}${EG01}${NC}${CTB06}${TDF02}${NC}${CEG03}${EG03}${NC}${TAG04}${CEG05}${EG05}${NC}${CTB06}${TDF06}${NC}${CEG07}${EG07}${NC}${TAG08}${CEG09}${EG09}${NC}${CTB06}${TDF10}${NC}${CEG11}${EG11}${NC}${GRID_L20_B}                     │"
 echo -e " │ ${GRID_L21_A}${CEG01}${EG01}${NC}${TEF02}${CEG03}${EG03}${NC}${CTB06}${TBG04}${NC}${CEG05}${EG05}${NC}${TEF06}${CEG07}${EG07}${NC}${CTB06}${TBG08}${NC}${CEG09}${EG09}${NC}${TEF10}${CEG11}${EG11}${NC}${GRID_L21_B}                     │"
 # G
 echo -e " │ ${GRID_L22_A}${CEG01}${EG01}${NC}${CVG02}${VG02}${NC}${CEG02}${EG02}${NC}${CVG03}${VG03}${NC}${CEG03}${EG03}${NC}${CTB06}${TCG04}${NC}${CEG05}${EG05}${NC}${CVG06}${VG06}${NC}${CEG06}${EG06}${NC}${CVG07}${VG07}${NC}${CEG07}${EG07}${NC}${CTB06}${TCG08}${NC}${CEG09}${EG09}${NC}${CVG10}${VG10}${NC}${CEG10}${EG10}${NC}${CVG11}${VG11}${NC}${CEG11}${EG11}${NC}${GRID_L22_B}                 │"
@@ -157,13 +157,14 @@ for ring in 5 4 3 2 1; do
     this_edge=$(echo $edge | sed -e 's/:.*//g')
     # echo "$this_edge"
     EDGES="$EDGES $this_edge"
-    eval "C$this_edge='${GREEN}'"
+    eval "C$this_edge='${RED}'"
     NOW=$(date +%s)
     DIFF=$((NOW-START_TIME))
     RUN_TIME=$(convertsecs $DIFF)
     board
     perl -e 'select(undef,undef,undef,'$sleep_for')'
     last="$this_edge"
+
   done
 done
 
@@ -184,20 +185,98 @@ for ring in 3 2 1; do
     last="$this_vertex"
   done
 done
+
+last_key="nothing"
+last_val="nothing"
+
+# for tile in $(cat vars.sh | egrep '^TA' | sed -e 's/=.*//g' | sed -e 's/TA//g'); do
+for row in $(cat vars.sh| egrep '^TA' | sed -e 's/=.*//g' | sed -e 's/TA\([A-Z]\).*/\1/g' | sort | uniq); do
+  for line in A B C D E; do
+    for tile in $(cat vars.sh | egrep '^T'${line}${row} | sed -e 's/=.*//g' | sed -e 's/T'${line}${row}'//g'); do
+      # eval "$last_key='${last_val}'"
+
+      THIS_KEY="T${line}${row}${tile}"
+      # i dunno... it works...
+      THIS_VAL=$(eval "echo $(echo \"\$$THIS_KEY\")")
+      # echo "$THIS_KEY: $THIS_VAL"
+      last_key="$THIS_KEY"
+      last_val="$THIS_VAL"
+      NEW_VAL=$(echo $THIS_VAL | sed -e 's/./ /g')
+      eval "$THIS_KEY='${NEW_VAL}'"
+      VER_VAL=$(eval "echo $(echo \"\$$THIS_KEY\")")
+      # echo "$NEW_VAL ?= $VER_VAL"
+    done
+    NOW=$(date +%s)
+    DIFF=$((NOW-START_TIME))
+    RUN_TIME=$(convertsecs $DIFF)
+    board
+    perl -e 'select(undef,undef,undef,'$sleep_for')'
+  done
+done
+
 sleep 1
+before="tempp"
+beforev="tempp"
 prev="temp"
+prevv="temp"
 last="EB05"
-next="EA06"
-lastv="blah"
+next="EB05"
+lastv="VA06"
 while true; do
-  next=$(cat contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | sort -R | head -1)
-  # echo "$next"
+  # echo "---------- Before ------------"
+  # echo "Before: $before:$beforev"
+  # echo "Prev: $prev:$prevv"
+  # echo "Last: $last:$lastv"
+  # echo "Next: $next:$nextv"
+  # echo "beforev: $(cat contiguous-roads.txt | grep $beforev:)"
+  # echo "prev: $(cat contiguous-roads.txt | grep $prev:)"
+  # echo "last: $(cat contiguous-roads.txt | grep $last:)"
+  # echo "next: $(cat contiguous-roads.txt | grep $next:)"
+
+
+  next=$(cat contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$before" | sort -R | head -1)
+  # next_color=$(eval "echo $(echo \"\$C$next\")")
+  # echo "Next: $next -> $next_color"
+  # echo "Next: $next"
+  # # Try to pick an edge that hasn't been changed yet
+  # if [[ "$next_color" = "$NC" ]]; then
+  #   potential_next=$(cat contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$next" | sort -R | head -1)
+  #   if ! [ -z $potential_next ]; then
+  #     next="$potential_next"
+  #   fi
+  # fi
   eval "C$next='${BLUE}'"
-  VERTEX=$(cat verticies.txt | grep "$next" | grep "$last" | sed -e 's/:.*//g')
-  eval "C$VERTEX='${BLUE}'"
+  nextv=$(cat verticies.txt | grep "$next" | grep "$last" | sed -e 's/:.*//g')
+
+  # echo "---------- After ------------"
+  # echo "Before: $before:$beforev"
+  # echo "Prev: $prev:$prevv"
+  # echo "Last: $last:$lastv"
+  # echo "Next: $next:$nextv"
+  # echo "-----------------------------"
+  if [ -z "$nextv" ]; then
+    echo "$next:$last has no vertex..."
+    echo "prev: $(cat contiguous-roads.txt | grep $prev:)"
+    echo "last: $(cat contiguous-roads.txt | grep $last:)"
+    echo "next: $(cat contiguous-roads.txt | grep $next:)"
+    echo "-----------------------------"
+
+    echo "cat contiguous-roads.txt | grep \"$next:\" | sed -e 's/^.*://g' | tr , '\n' | grep -v \"$last\" | grep -v \"$prev\""
+    exit 0
+  fi
+  eval "C$nextv='${BLUE}'"
   eval "C$last='${BLUE}'"
-  eval "C$prev='${NC}'"
-  eval "C$lastv='${NC}'"
+  eval "C$prev='${BLUE}'"
+  eval "C$before='${NC}'"
+  if ! [[ "$nextv" = "$lastv" ]]; then
+    eval "C$lastv='${BLUE}'"
+  fi
+  if ! [[ "$prevv" = "$lastv" ]]; then
+    eval "C$prevv='${BLUE}'"
+  fi
+  if ! [[ "$prevv" = "$beforev" ]]; then
+    eval "C$beforev='${NC}'"
+  fi
   if [ -z "$last" ]; then
     echo "last: $last doesn't exist..."
     echo "next: $next"
@@ -213,10 +292,13 @@ while true; do
   DIFF=$((NOW-START_TIME))
   RUN_TIME=$(convertsecs $DIFF)
   board
-  if ! [ -z "$VERTEX" ]; then
-    # echo "VERTEX: $VERTEX"
+  if ! [ -z "$nextv" ]; then
+    this_color=$(eval "echo $(echo \"\$C$nextv\")")
+    # echo "nextv: $nextv -> $this_color"
+  
+
     # echo "Before: '$VERTS'"
-    VERTS=$(echo $VERTS | tr ' ' '\n' | grep -v "$VERTEX" | tr '\n' ' ')
+    VERTS=$(echo $VERTS | tr ' ' '\n' | grep -v "$nextv" | tr '\n' ' ')
     # echo "After: '$VERTS'"
     # sleep 2
   fi
@@ -241,8 +323,25 @@ while true; do
     echo "Game over!"
     exit 0
   fi
+
+
+    # read -t 1 -n 1 input
+    # if [[ $input = "q" ]] || [[ $input = "Q" ]]; then
+    #     # The following line is for the prompt to appear on a new line.
+    #     echo
+    #     break 
+    # fi
+    # if [[ $input = "p" ]] || [[ $input = "P" ]]; then
+    #     # The following line is for the prompt to appear on a new line.
+    #     sleep 10
+    #     unset input
+    # fi
+
   perl -e 'select(undef,undef,undef,'$sleep_forr')'
+  before="$prev"
+  beforev="$prevv"
   prev="$last"
+  prevv="$lastv"
   last="$next"
-  lastv="$VERTEX"
+  lastv="$nextv"
 done
