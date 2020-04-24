@@ -68,12 +68,20 @@ board() {
 CURRENT_VERTS=$(echo $VERTS | tr ' ' '\n' | wc -l | awk '{print $1}')
 CURRENT_EDGES=$(echo $EDGES | tr ' ' '\n' | wc -l | awk '{print $1}')
 
-CURRENT_VERTS=$(printf "%02d" $CURRENT_VERTS)
-CURRENT_EDGES=$(printf "%02d" $CURRENT_EDGES)
+
+if [ -z "$VERTS" ]; then
+  CURRENT_VERTS="00"
+else
+  CURRENT_VERTS=$(printf "%02d" $CURRENT_VERTS)
+fi
+if [ -z "$EDGES" ]; then
+  CURRENT_EDGES="00"
+else
+  CURRENT_EDGES=$(printf "%02d" $CURRENT_EDGES)
+fi
 CURRENT_TOTAL=$(printf "%06d" $TOTAL)
 clear
 
-# ${P1A06}${P2A06}
 echo -e " ${BORDER_TOP}"
 echo -e " │                                                     Run Time: ${RUN_TIME} │"
 echo -e " │                                                          Verticies: $CURRENT_VERTS │"
@@ -204,7 +212,6 @@ for row in $(cat vars.sh| egrep '^TA' | sed -e 's/=.*//g' | sed -e 's/TA\([A-Z]\
       NEW_VAL=$(echo $THIS_VAL | sed -e 's/./ /g')
       eval "$THIS_KEY='${NEW_VAL}'"
       VER_VAL=$(eval "echo $(echo \"\$$THIS_KEY\")")
-      # echo "$NEW_VAL ?= $VER_VAL"
     done
     NOW=$(date +%s)
     DIFF=$((NOW-START_TIME))
@@ -215,6 +222,7 @@ for row in $(cat vars.sh| egrep '^TA' | sed -e 's/=.*//g' | sed -e 's/TA\([A-Z]\
 done
 
 sleep 1
+
 before="tempp"
 beforev="tempp"
 prev="temp"
@@ -234,17 +242,18 @@ while true; do
   # echo "next: $(cat board/contiguous-roads.txt | grep $next:)"
 
 
-  next=$(cat board/contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$before" | sort -R | head -1)
-  # next_color=$(eval "echo $(echo \"\$C$next\")")
-  # echo "Next: $next -> $next_color"
-  # echo "Next: $next"
-  # # Try to pick an edge that hasn't been changed yet
-  # if [[ "$next_color" = "$NC" ]]; then
-  #   potential_next=$(cat board/contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$next" | sort -R | head -1)
-  #   if ! [ -z $potential_next ]; then
-  #     next="$potential_next"
-  #   fi
-  # fi
+  next=$(cat board/contiguous-roads.txt | grep "$next:" | sed -e 's/^.*://g' | tr , '\n' | grep -v "$last" | grep -v "$prev" | grep -v "$before" | sort -R)
+  # the var next contains the connected edges to the last edge. this loop will pick an edge that hasn't already been selected
+  for that in $next; do
+    next_color=$(eval "echo $(echo \"\$C$that\")")
+    if [[ "$next_color" != "$NC" ]]; then
+      next=$that
+      break
+    fi
+  done
+  # If the var next has more than one value at this stage, all edges have been selected at least once, and a random edge is selected
+  next=$(echo $next | sed -e 's/\ .*//g' | head -1)
+
   eval "C$next='${BLUE}'"
   nextv=$(cat board/verticies.txt | grep "$next" | grep "$last" | sed -e 's/:.*//g')
 
@@ -320,6 +329,7 @@ while true; do
     VERTS=""
   fi
   if [ -z "$EDGES" ] && [ -z "$VERTS" ]; then
+    board
     echo "Game over!"
     exit 0
   fi
